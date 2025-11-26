@@ -56,7 +56,7 @@ export default function ScanPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md border-dashed border-2">
         <CardHeader className="text-center">
           <div className="mx-auto bg-primary/10 p-4 rounded-full mb-4 w-fit">
