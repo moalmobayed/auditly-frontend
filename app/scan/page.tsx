@@ -48,6 +48,9 @@ export default function ScanPage() {
 
   const handleCardClick = () => {
     if (!isUploading) {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       fileInputRef.current?.click();
     }
   };
@@ -109,6 +112,8 @@ export default function ScanPage() {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Analyzing...
               </>
+            ) : error ? (
+              "Try Again"
             ) : (
               "Select File"
             )}
