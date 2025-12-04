@@ -31,6 +31,9 @@ export function SiteHeader() {
           <Link href="/scan" className="cursor-target">
             Scan Project
           </Link>
+          <Link href="/compliance" className="cursor-target">
+            Compliance Checker
+          </Link>
           <Link href="/team" className="cursor-target">
             Team
           </Link>
