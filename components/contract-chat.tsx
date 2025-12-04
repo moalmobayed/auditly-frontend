@@ -1,11 +1,23 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Send, Loader2, MessageCircle, BookOpen, Lightbulb } from "lucide-react";
+import {
+  Send,
+  Loader2,
+  MessageCircle,
+  BookOpen,
+  Lightbulb,
+} from "lucide-react";
 import { ChatMessage, ContractAnalysis } from "@/types/contract";
 import { readStreamableValue } from "ai/rsc";
 
@@ -58,7 +70,19 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to get response");
+        const errorData = await response.json().catch(() => ({}));
+
+        // Handle quota errors specifically
+        if (
+          response.status === 429 ||
+          errorData.errorType === "quota_exceeded"
+        ) {
+          throw new Error(
+            "API quota limit exceeded. Please wait a moment and try again."
+          );
+        }
+
+        throw new Error(errorData.error || "Failed to get response");
       }
 
       // Handle streaming response
@@ -97,7 +121,8 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: accumulatedText || "I apologize, but I couldn't generate a response.",
+        content:
+          accumulatedText || "I apologize, but I couldn't generate a response.",
         timestamp: new Date(),
       };
 
@@ -105,11 +130,27 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
       setStreamingMessage("");
     } catch (error) {
       console.error("Chat error:", error);
-      
+
+      let errorContent =
+        "I apologize, but I encountered an error. Please try again.";
+
+      // Provide better error message for quota errors
+      if (error instanceof Error) {
+        if (
+          error.message.includes("quota") ||
+          error.message.includes("rate limit")
+        ) {
+          errorContent =
+            "⚠️ API quota limit reached. Please wait 1-2 minutes before asking another question.\n\nYou can check your API usage at: https://ai.dev/usage";
+        } else {
+          errorContent = `Error: ${error.message}`;
+        }
+      }
+
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: "I apologize, but I encountered an error. Please try again.",
+        content: errorContent,
         timestamp: new Date(),
       };
 
@@ -136,7 +177,8 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
               Ask About Your Contract
             </CardTitle>
             <CardDescription>
-              Get answers about Egyptian law compliance, clauses, and legal requirements
+              Get answers about Egyptian law compliance, clauses, and legal
+              requirements
             </CardDescription>
           </div>
         </div>
@@ -149,8 +191,8 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
               <MessageCircle className="h-12 w-12 mb-3 opacity-50" />
               <p className="text-sm mb-2">No messages yet</p>
               <p className="text-xs max-w-sm">
-                Ask questions about the contract, specific clauses, Egyptian law compliance, or
-                request clarifications on the analysis results.
+                Ask questions about the contract, specific clauses, Egyptian law
+                compliance, or request clarifications on the analysis results.
               </p>
               <div className="mt-4 space-y-2 text-left">
                 <p className="text-xs font-semibold">Example questions:</p>
@@ -166,7 +208,9 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex ${
+                message.role === "user" ? "justify-end" : "justify-start"
+              }`}
             >
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
@@ -177,16 +221,24 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
               >
                 <div className="flex items-start gap-2">
                   {message.role === "assistant" && (
-                    <BookOpen className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <BookOpen className="h-4 w-4 mt-0.5 shrink-0" />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <p className="text-sm whitespace-pre-wrap">
+                      {message.content}
+                    </p>
                     {message.structured?.lawReferences &&
                       message.structured.lawReferences.length > 0 && (
                         <div className="mt-2 pt-2 border-t border-border/50">
-                          <p className="text-xs font-semibold mb-1">Law References:</p>
+                          <p className="text-xs font-semibold mb-1">
+                            Law References:
+                          </p>
                           {message.structured.lawReferences.map((ref, idx) => (
-                            <Badge key={idx} variant="outline" className="mr-1 mb-1 text-xs">
+                            <Badge
+                              key={idx}
+                              variant="outline"
+                              className="mr-1 mb-1 text-xs"
+                            >
                               {ref.article}
                             </Badge>
                           ))}
@@ -200,9 +252,11 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
                             Suggestions:
                           </p>
                           <ul className="text-xs space-y-1">
-                            {message.structured.additionalSuggestions.map((suggestion, idx) => (
-                              <li key={idx}>• {suggestion}</li>
-                            ))}
+                            {message.structured.additionalSuggestions.map(
+                              (suggestion, idx) => (
+                                <li key={idx}>• {suggestion}</li>
+                              )
+                            )}
                           </ul>
                         </div>
                       )}
@@ -223,9 +277,11 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
             <div className="flex justify-start">
               <div className="max-w-[80%] rounded-lg p-3 bg-muted">
                 <div className="flex items-start gap-2">
-                  <BookOpen className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <BookOpen className="h-4 w-4 mt-0.5 shrink-0" />
                   <div className="flex-1">
-                    <p className="text-sm whitespace-pre-wrap">{streamingMessage}</p>
+                    <p className="text-sm whitespace-pre-wrap">
+                      {streamingMessage}
+                    </p>
                     <div className="flex items-center gap-1 mt-2">
                       <Loader2 className="h-3 w-3 animate-spin" />
                       <span className="text-xs opacity-70">Typing...</span>
@@ -261,7 +317,10 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
             disabled={isLoading}
             className="flex-1"
           />
-          <Button onClick={handleSendMessage} disabled={!input.trim() || isLoading}>
+          <Button
+            onClick={handleSendMessage}
+            disabled={!input.trim() || isLoading}
+          >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (

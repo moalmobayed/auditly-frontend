@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Upload, FileText, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
-import { extractTextFromFile, validateContractText } from "@/lib/contract-handler";
+import { validateContractText } from "@/lib/contract-validation";
 import { ContractUploadState } from "@/types/contract";
 
 interface ContractUploadProps {
@@ -30,11 +30,35 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
     });
 
     try {
-      const result = await extractTextFromFile(file);
+      // Create form data to send file to API
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Call API to extract text
+      const response = await fetch("/api/contract/extract", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      console.log("=== PDF EXTRACTION RESULT ===");
+      console.log("Success:", result.success);
+      console.log("File Name:", result.fileName);
+      console.log("File Size:", result.fileSize);
+      console.log("Extracted Text Length:", result.text?.length);
+      console.log("Extracted Text Preview:", result.text?.substring(0, 500));
+      console.log("Full Extracted Text:", result.text);
+      console.log("============================");
 
       if (result.success && result.text) {
         // Validate extracted text
         const validation = validateContractText(result.text);
+        
+        console.log("=== TEXT VALIDATION ===");
+        console.log("Valid:", validation.valid);
+        console.log("Error:", validation.error);
+        console.log("======================");
         
         if (!validation.valid) {
           setUploadState({
@@ -53,16 +77,18 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
           text: result.text,
         });
         
+        console.log("=== TEXT EXTRACTED - READY FOR ANALYSIS ===");
         onTextExtracted(result.text);
       } else {
         setUploadState({
           status: "error",
-          fileName: result.fileName,
-          fileSize: result.fileSize,
-          error: result.error,
+          fileName: result.fileName || file.name,
+          fileSize: result.fileSize || file.size,
+          error: result.error || "Failed to extract text from file",
         });
       }
     } catch (error) {
+      console.error("File upload error:", error);
       setUploadState({
         status: "error",
         fileName: file.name,
@@ -105,7 +131,19 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
   const handleTextSubmit = () => {
     const trimmedText = textInput.trim();
     
+    console.log("=== TEXT INPUT SUBMITTED ===");
+    console.log("Text Length:", trimmedText.length);
+    console.log("Text Preview:", trimmedText.substring(0, 500));
+    console.log("Full Text:", trimmedText);
+    console.log("===========================");
+    
     const validation = validateContractText(trimmedText);
+    
+    console.log("=== TEXT VALIDATION ===");
+    console.log("Valid:", validation.valid);
+    console.log("Error:", validation.error);
+    console.log("======================");
+    
     if (!validation.valid) {
       setUploadState({
         status: "error",
@@ -119,6 +157,7 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
       text: trimmedText,
     });
     
+    console.log("=== TEXT READY FOR ANALYSIS ===");
     onTextExtracted(trimmedText);
   };
 

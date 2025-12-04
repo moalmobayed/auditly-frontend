@@ -18,12 +18,11 @@ export function getGoogleAIClient() {
 // Get the Gemini model for code analysis
 export function getGeminiModel() {
   const google = getGoogleAIClient();
-  // Using Gemini 1.5 Pro for comprehensive code analysis
-  return google("gemini-1.5-pro-latest");
+  // Using Gemini 2.0 Flash for comprehensive code analysis
+  return google("models/gemini-flash-lite-latest");
 }
 
 // Helper to check if AI is configured
 export function isAIConfigured(): boolean {
   return !!process.env.GOOGLE_AI_API_KEY;
 }
-
