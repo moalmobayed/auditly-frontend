@@ -34,6 +34,9 @@ export function SiteHeader() {
           <Link href="/compliance" className="cursor-target">
             Compliance Checker
           </Link>
+          <Link href="/contract" className="cursor-target">
+            Contract Analyzer
+          </Link>
           <Link href="/team" className="cursor-target">
             Team
           </Link>
