@@ -14,13 +14,11 @@ export function SiteHeader() {
       className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
     >
       <div className="container flex h-14 justify-between mx-auto items-center">
-        <Link className="mr-6 flex items-center space-x-2" href="/">
+        <Link className="ml-6 flex items-center gap-2" href="/">
           <span className="hidden font-bold sm:inline-block">Auditly</span>
         </Link>
 
         <nav className="flex items-center gap-8 relative">
-          <ModeToggle />
-
           <TargetCursor
             spinDuration={3}
             hideDefaultCursor={true}
@@ -29,17 +27,19 @@ export function SiteHeader() {
           />
 
           <Link href="/scan" className="cursor-target">
-            Scan Project
+            فحص المشروع
           </Link>
           <Link href="/compliance" className="cursor-target">
-            Compliance Checker
+            فحص الامتثال
           </Link>
           <Link href="/contract" className="cursor-target">
-            Contract Analyzer
+            محلل العقود
           </Link>
           <Link href="/team" className="cursor-target">
-            Team
+            الفريق
           </Link>
+
+          <ModeToggle />
         </nav>
       </div>
     </header>

@@ -37,7 +37,7 @@ export default function ContractPage() {
 
   const handleAnalyze = async () => {
     if (!contractText) {
-      setError({ message: "Please upload a contract first", retryable: false });
+      setError({ message: "يرجى رفع العقد أولاً", retryable: false });
       return;
     }
 
@@ -164,24 +164,22 @@ export default function ContractPage() {
           <div className="flex items-center justify-center gap-3">
             <Scale className="h-10 w-10 text-primary" />
             <h1 className="text-4xl font-bold">
-              Egyptian Law Contract Analyzer
+              محلل العقود وفقاً للقانون المصري
             </h1>
           </div>
           <p className="text-muted-foreground max-w-3xl mx-auto">
-            Upload your contract and get comprehensive legal analysis based on
-            Egyptian Civil Code, Commercial Code, and Labor Law. Our AI-powered
-            system identifies issues, violations, and provides actionable
-            recommendations.
+            قم برفع عقدك واحصل على تحليل قانوني شامل بناءً على القانون المدني
+            المصري والقانون التجاري وقانون العمل. نظامنا المدعوم بالذكاء
+            الاصطناعي يحدد المشاكل والمخالفات ويقدم توصيات قابلة للتنفيذ.
           </p>
         </div>
 
         {/* Step 1: Upload Contract */}
         <Card>
           <CardHeader>
-            <CardTitle>Step 1: Upload Your Contract</CardTitle>
+            <CardTitle>الخطوة 1: رفع العقد</CardTitle>
             <CardDescription>
-              Upload a PDF, DOCX, or TXT file, or paste your contract text
-              directly
+              قم برفع ملف PDF أو DOCX أو TXT، أو الصق نص العقد مباشرة
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -196,9 +194,9 @@ export default function ContractPage() {
         {contractText && !analysis && (
           <Card>
             <CardHeader>
-              <CardTitle>Step 2: Analyze Contract</CardTitle>
+              <CardTitle>الخطوة 2: تحليل العقد</CardTitle>
               <CardDescription>
-                Start AI-powered analysis against Egyptian law requirements
+                ابدأ التحليل المدعوم بالذكاء الاصطناعي وفقاً لمتطلبات القانون المصري
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -210,13 +208,13 @@ export default function ContractPage() {
               >
                 {isAnalyzing ? (
                   <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Analyzing Contract...
+                    <Loader2 className="ml-2 h-5 w-5 animate-spin" />
+                    جاري تحليل العقد...
                   </>
                 ) : (
                   <>
-                    <FileCheck className="mr-2 h-5 w-5" />
-                    Analyze Contract
+                    <FileCheck className="ml-2 h-5 w-5" />
+                    تحليل العقد
                   </>
                 )}
               </Button>
@@ -250,7 +248,7 @@ export default function ContractPage() {
                   : ""
               }
             >
-              {error.type === "quota_exceeded" ? "Rate Limit Reached" : "Error"}
+              {error.type === "quota_exceeded" ? "تم الوصول إلى حد الاستخدام" : "خطأ"}
             </AlertTitle>
             <AlertDescription
               className={
@@ -263,11 +261,11 @@ export default function ContractPage() {
                 <p>{error.message}</p>
                 {error.type === "quota_exceeded" && (
                   <div className="text-sm mt-2 space-y-1">
-                    <p className="font-medium">What you can do:</p>
-                    <ul className="list-disc list-inside space-y-1 ml-2">
-                      <li>Wait 1-2 minutes and try again</li>
+                    <p className="font-medium">ما يمكنك فعله:</p>
+                    <ul className="list-disc list-inside space-y-1 mr-2">
+                      <li>انتظر دقيقة أو دقيقتين وحاول مرة أخرى</li>
                       <li>
-                        Check your Google AI API quota at{" "}
+                        تحقق من حصة Google AI API الخاصة بك على{" "}
                         <a
                           href="https://ai.dev/usage"
                           target="_blank"
@@ -278,7 +276,7 @@ export default function ContractPage() {
                         </a>
                       </li>
                       <li>
-                        Consider upgrading your API plan for higher limits
+                        فكر في ترقية خطة API للحصول على حدود أعلى
                       </li>
                     </ul>
                   </div>
@@ -295,11 +293,11 @@ export default function ContractPage() {
                   >
                     {isAnalyzing ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Retrying...
+                        <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                        جاري إعادة المحاولة...
                       </>
                     ) : (
-                      "Try Again"
+                      "حاول مرة أخرى"
                     )}
                   </Button>
                 )}
@@ -316,9 +314,9 @@ export default function ContractPage() {
             {/* Analysis Display */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold">Analysis Results</h2>
+                <h2 className="text-2xl font-bold">نتائج التحليل</h2>
                 <Button variant="outline" onClick={handleReset}>
-                  Analyze Another Contract
+                  تحليل عقد آخر
                 </Button>
               </div>
               <ContractAnalysisDisplay analysis={analysis} />
@@ -328,7 +326,7 @@ export default function ContractPage() {
 
             {/* Chat Interface */}
             <div>
-              <h2 className="text-2xl font-bold mb-4">Ask Questions</h2>
+              <h2 className="text-2xl font-bold mb-4">اطرح أسئلة</h2>
               <ContractChat contractText={contractText} analysis={analysis} />
             </div>
           </>
@@ -337,12 +335,12 @@ export default function ContractPage() {
         {/* Info Note */}
         <Alert>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Legal Disclaimer</AlertTitle>
+          <AlertTitle>إخلاء المسؤولية القانونية</AlertTitle>
           <AlertDescription>
-            This tool provides automated analysis based on Egyptian law
-            principles. While our AI is trained on legal frameworks, this
-            analysis should not replace professional legal advice. Always
-            consult with a qualified legal professional for important contracts.
+            هذه الأداة تقدم تحليلاً آلياً بناءً على مبادئ القانون المصري. بينما
+            تم تدريب الذكاء الاصطناعي لدينا على الأطر القانونية، لا ينبغي أن
+            يحل هذا التحليل محل المشورة القانونية المهنية. استشر دائماً محامياً
+            مؤهلاً للعقود المهمة.
           </AlertDescription>
         </Alert>
       </div>

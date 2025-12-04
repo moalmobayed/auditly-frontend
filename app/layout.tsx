@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Cairo } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteHeader } from "@/components/site-header";
@@ -14,9 +15,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Arabic font
+const cairo = Cairo({
+  variable: "--font-cairo",
+  subsets: ["arabic", "latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "Auditly - Legal Risk Scanner",
-  description: "AI-Powered Dependency Risk Scanner",
+  title: "Auditly - محلل العقود القانوني",
+  description: "نظام ذكي لتحليل العقود وفقاً للقانون المصري",
 };
 
 export default function RootLayout({
@@ -25,9 +33,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${cairo.variable} font-cairo antialiased`}
       >
         <ThemeProvider
           attribute="class"

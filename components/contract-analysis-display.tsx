@@ -1,9 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -75,20 +85,20 @@ function IssueCard({ issue }: { issue: ContractIssue }) {
         <CollapsibleTrigger className="w-full">
           <CardHeader className="hover:bg-muted/50 transition-colors cursor-pointer">
             <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3 text-left flex-1">
-                <div className="mt-1">
-                  {getSeverityIcon(issue.severity)}
-                </div>
+              <div className="flex items-start gap-3 text-right flex-1">
+                <div className="mt-1">{getSeverityIcon(issue.severity)}</div>
                 <div className="flex-1">
-                  <CardTitle className="text-lg mb-1">{issue.title}</CardTitle>
-                  <CardDescription className="line-clamp-2">
+                  <CardTitle className="text-lg mb-1 text-arabic-auto">
+                    {issue.title}
+                  </CardTitle>
+                  <CardDescription className="line-clamp-2 text-arabic-auto">
                     {issue.description}
                   </CardDescription>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Badge className={getSeverityColor(issue.severity)}>
-                  {issue.severity}
+                  {getSeverityText(issue.severity)}
                 </Badge>
                 {isOpen ? (
                   <ChevronUp className="h-5 w-5 text-muted-foreground" />
@@ -108,29 +118,31 @@ function IssueCard({ issue }: { issue: ContractIssue }) {
             <div>
               <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4" />
-                Issue Details
+                تفاصيل المشكلة
               </h4>
-              <p className="text-sm text-muted-foreground">{issue.description}</p>
+              <p className="text-sm text-muted-foreground text-arabic-auto">
+                {issue.description}
+              </p>
             </div>
 
             {/* Egyptian Law Reference */}
             <div className="bg-muted/50 p-4 rounded-lg">
               <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                 <BookOpen className="h-4 w-4" />
-                Egyptian Law Reference
+                مرجع القانون المصري
               </h4>
               <div className="space-y-1 text-sm">
-                <p>
-                  <span className="font-medium">Law: </span>
+                <p className="text-arabic-auto">
+                  <span className="font-medium">القانون: </span>
                   {issue.egyptianLawReference.lawName}
                 </p>
-                <p>
-                  <span className="font-medium">Article: </span>
+                <p className="text-arabic-auto">
+                  <span className="font-medium">المادة: </span>
                   {issue.egyptianLawReference.article}
                 </p>
                 {issue.egyptianLawReference.articleText && (
-                  <p className="mt-2 text-muted-foreground italic">
-                    "{issue.egyptianLawReference.articleText}"
+                  <p className="mt-2 text-muted-foreground italic text-arabic-auto">
+                    &quot;{issue.egyptianLawReference.articleText}&quot;
                   </p>
                 )}
               </div>
@@ -139,8 +151,8 @@ function IssueCard({ issue }: { issue: ContractIssue }) {
             {/* Affected Clause */}
             {issue.affectedClause && (
               <div>
-                <h4 className="text-sm font-semibold mb-2">Affected Clause</h4>
-                <p className="text-sm text-muted-foreground bg-muted/30 p-3 rounded border-l-4 border-primary">
+                <h4 className="text-sm font-semibold mb-2">البند المتأثر</h4>
+                <p className="text-sm text-muted-foreground bg-muted/30 p-3 rounded border-r-4 border-primary text-arabic-auto">
                   {issue.affectedClause}
                 </p>
               </div>
@@ -150,16 +162,18 @@ function IssueCard({ issue }: { issue: ContractIssue }) {
             <div>
               <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                 <Lightbulb className="h-4 w-4 text-yellow-500" />
-                Recommendation
+                التوصية
               </h4>
-              <p className="text-sm text-muted-foreground">{issue.suggestion}</p>
+              <p className="text-sm text-muted-foreground text-arabic-auto">
+                {issue.suggestion}
+              </p>
             </div>
 
             {/* Fix Example */}
             {issue.fixExample && (
               <div>
-                <h4 className="text-sm font-semibold mb-2">Suggested Fix</h4>
-                <pre className="text-sm bg-muted p-3 rounded overflow-x-auto whitespace-pre-wrap">
+                <h4 className="text-sm font-semibold mb-2">الحل المقترح</h4>
+                <pre className="text-sm bg-muted p-3 rounded overflow-x-auto whitespace-pre-wrap text-arabic-auto">
                   {issue.fixExample}
                 </pre>
               </div>
@@ -201,7 +215,41 @@ function IssueSection({
   );
 }
 
-export function ContractAnalysisDisplay({ analysis }: ContractAnalysisDisplayProps) {
+// Arabic translations for severity levels
+const getSeverityText = (severity: Severity): string => {
+  switch (severity) {
+    case Severity.Critical:
+      return "حرج";
+    case Severity.High:
+      return "عالي";
+    case Severity.Medium:
+      return "متوسط";
+    case Severity.Low:
+      return "منخفض";
+    default:
+      return severity;
+  }
+};
+
+// Arabic translations for risk levels
+const getRiskText = (risk: string): string => {
+  switch (risk) {
+    case "critical":
+      return "حرج";
+    case "high":
+      return "عالي";
+    case "moderate":
+      return "متوسط";
+    case "low":
+      return "منخفض";
+    default:
+      return risk;
+  }
+};
+
+export function ContractAnalysisDisplay({
+  analysis,
+}: ContractAnalysisDisplayProps) {
   return (
     <div className="space-y-6">
       {/* Summary Card */}
@@ -209,14 +257,18 @@ export function ContractAnalysisDisplay({ analysis }: ContractAnalysisDisplayPro
         <CardHeader>
           <div className="flex items-start justify-between">
             <div>
-              <CardTitle className="text-2xl mb-2">Analysis Summary</CardTitle>
+              <CardTitle className="text-2xl mb-2">ملخص التحليل</CardTitle>
               <CardDescription>
-                Based on Egyptian Civil Code, Commercial Code, and Labor Law
+                بناءً على القانون المدني المصري والقانون التجاري وقانون العمل
               </CardDescription>
             </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold">{analysis.summary.totalIssues}</div>
-              <div className="text-sm text-muted-foreground">Total Issues</div>
+            <div className="text-left">
+              <div className="text-3xl font-bold">
+                {analysis.summary.totalIssues}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                إجمالي المشاكل
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -227,25 +279,25 @@ export function ContractAnalysisDisplay({ analysis }: ContractAnalysisDisplayPro
               <div className="text-2xl font-bold text-red-500">
                 {analysis.summary.criticalCount}
               </div>
-              <div className="text-xs text-muted-foreground">Critical</div>
+              <div className="text-xs text-muted-foreground">حرج</div>
             </div>
             <div className="text-center p-3 bg-orange-500/10 rounded-lg border border-orange-500/20">
               <div className="text-2xl font-bold text-orange-500">
                 {analysis.summary.highCount}
               </div>
-              <div className="text-xs text-muted-foreground">High</div>
+              <div className="text-xs text-muted-foreground">عالي</div>
             </div>
             <div className="text-center p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
               <div className="text-2xl font-bold text-yellow-500">
                 {analysis.summary.mediumCount}
               </div>
-              <div className="text-xs text-muted-foreground">Medium</div>
+              <div className="text-xs text-muted-foreground">متوسط</div>
             </div>
             <div className="text-center p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
               <div className="text-2xl font-bold text-blue-500">
                 {analysis.summary.lowCount}
               </div>
-              <div className="text-xs text-muted-foreground">Low</div>
+              <div className="text-xs text-muted-foreground">منخفض</div>
             </div>
           </div>
 
@@ -255,9 +307,11 @@ export function ContractAnalysisDisplay({ analysis }: ContractAnalysisDisplayPro
           <div>
             <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
               <ShieldCheck className="h-4 w-4" />
-              General Insights
+              الرؤى العامة
             </h4>
-            <p className="text-sm text-muted-foreground">{analysis.generalInsights}</p>
+            <p className="text-sm text-muted-foreground text-arabic-auto">
+              {analysis.generalInsights}
+            </p>
           </div>
 
           {/* Recommendations */}
@@ -265,11 +319,14 @@ export function ContractAnalysisDisplay({ analysis }: ContractAnalysisDisplayPro
             <div>
               <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                 <Lightbulb className="h-4 w-4" />
-                Key Recommendations
+                التوصيات الرئيسية
               </h4>
               <ul className="space-y-1">
                 {analysis.recommendations.map((rec, index) => (
-                  <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
+                  <li
+                    key={index}
+                    className="text-sm text-muted-foreground flex items-start gap-2 text-arabic-auto"
+                  >
                     <span className="text-primary mt-0.5">•</span>
                     <span>{rec}</span>
                   </li>
@@ -282,46 +339,49 @@ export function ContractAnalysisDisplay({ analysis }: ContractAnalysisDisplayPro
 
       {/* Overall Risk Alert */}
       <Alert className={getRiskColor(analysis.summary.overallRisk)}>
-        {analysis.summary.overallRisk === "critical" || analysis.summary.overallRisk === "high" ? (
+        {analysis.summary.overallRisk === "critical" ||
+        analysis.summary.overallRisk === "high" ? (
           <AlertTriangle className="h-4 w-4" />
         ) : (
           <Info className="h-4 w-4" />
         )}
-        <AlertTitle>Overall Risk: {analysis.summary.overallRisk.toUpperCase()}</AlertTitle>
+        <AlertTitle>
+          مستوى المخاطر الإجمالي: {getRiskText(analysis.summary.overallRisk)}
+        </AlertTitle>
         <AlertDescription>
           {analysis.summary.overallRisk === "critical" &&
-            "This contract has critical legal issues that must be addressed immediately."}
+            "هذا العقد يحتوي على مشاكل قانونية حرجة يجب معالجتها فوراً."}
           {analysis.summary.overallRisk === "high" &&
-            "This contract has significant issues that should be reviewed by a legal professional."}
+            "هذا العقد يحتوي على مشاكل كبيرة يجب مراجعتها من قبل محامي متخصص."}
           {analysis.summary.overallRisk === "moderate" &&
-            "This contract has some concerns that should be addressed for better compliance."}
+            "هذا العقد يحتوي على بعض المخاوف التي يجب معالجتها لتحقيق امتثال أفضل."}
           {analysis.summary.overallRisk === "low" &&
-            "This contract appears to be generally compliant with minor improvements suggested."}
+            "يبدو أن هذا العقد متوافق بشكل عام مع اقتراح تحسينات طفيفة."}
         </AlertDescription>
       </Alert>
 
       {/* Issues by Severity */}
       <div className="space-y-6">
         <IssueSection
-          title="Critical Issues"
+          title="المشاكل الحرجة"
           issues={analysis.issues.critical}
           severity={Severity.Critical}
           count={analysis.summary.criticalCount}
         />
         <IssueSection
-          title="High Priority Issues"
+          title="مشاكل ذات أولوية عالية"
           issues={analysis.issues.high}
           severity={Severity.High}
           count={analysis.summary.highCount}
         />
         <IssueSection
-          title="Medium Priority Issues"
+          title="مشاكل ذات أولوية متوسطة"
           issues={analysis.issues.medium}
           severity={Severity.Medium}
           count={analysis.summary.mediumCount}
         />
         <IssueSection
-          title="Low Priority Issues"
+          title="مشاكل ذات أولوية منخفضة"
           issues={analysis.issues.low}
           severity={Severity.Low}
           count={analysis.summary.lowCount}
@@ -332,10 +392,12 @@ export function ContractAnalysisDisplay({ analysis }: ContractAnalysisDisplayPro
       {analysis.summary.totalIssues === 0 && (
         <Alert className="border-green-500 bg-green-500/10">
           <ShieldCheck className="h-4 w-4 text-green-500" />
-          <AlertTitle className="text-green-500">No Issues Found</AlertTitle>
+          <AlertTitle className="text-green-500">
+            لم يتم العثور على مشاكل
+          </AlertTitle>
           <AlertDescription className="text-green-600 dark:text-green-400">
-            The contract appears to be compliant with Egyptian law. However, it's always recommended
-            to have a legal professional review important contracts.
+            يبدو أن العقد متوافق مع القانون المصري. ومع ذلك، يُنصح دائماً
+            بمراجعة العقود المهمة من قبل محامي متخصص.
           </AlertDescription>
         </Alert>
       )}

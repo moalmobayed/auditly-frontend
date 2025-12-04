@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     console.log("🔍 Extracting text from file...");
     const startTime = Date.now();
-    
+
     // Extract text from file
     const result = await extractTextFromFile(file);
 

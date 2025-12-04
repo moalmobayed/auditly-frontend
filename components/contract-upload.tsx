@@ -181,8 +181,8 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
           }}
           disabled={disabled || uploadState.status === "extracting"}
         >
-          <Upload className="mr-2 h-4 w-4" />
-          Upload File
+          <Upload className="ml-2 h-4 w-4" />
+          رفع ملف
         </Button>
         <Button
           variant={uploadMethod === "text" ? "default" : "outline"}
@@ -192,8 +192,8 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
           }}
           disabled={disabled || uploadState.status === "extracting"}
         >
-          <FileText className="mr-2 h-4 w-4" />
-          Paste Text
+          <FileText className="ml-2 h-4 w-4" />
+          لصق النص
         </Button>
       </div>
 
@@ -229,9 +229,9 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
                 <>
                   <Loader2 className="h-12 w-12 text-primary animate-spin" />
                   <div>
-                    <p className="text-sm font-medium">Extracting text...</p>
+                    <p className="text-sm font-medium">جاري استخراج النص...</p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Processing {uploadState.fileName}
+                      معالجة {uploadState.fileName}
                     </p>
                   </div>
                 </>
@@ -240,10 +240,10 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
                   <Upload className="h-12 w-12 text-muted-foreground" />
                   <div>
                     <p className="text-sm font-medium mb-1">
-                      Click to upload or drag and drop
+                      انقر للرفع أو اسحب وأفلت
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Supported formats: PDF, DOCX, TXT (Max 10MB)
+                      الصيغ المدعومة: PDF، DOCX، TXT (الحد الأقصى 10MB)
                     </p>
                   </div>
                 </>
@@ -255,7 +255,7 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
         <div className="space-y-3">
           <textarea
             className="w-full min-h-[200px] p-4 border rounded-md resize-y"
-            placeholder="Paste your contract text here..."
+            placeholder="الصق نص العقد هنا..."
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
             disabled={disabled || uploadState.status === "extracting"}
@@ -265,8 +265,8 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
             disabled={!textInput.trim() || disabled || uploadState.status === "extracting"}
             className="w-full"
           >
-            <FileText className="mr-2 h-4 w-4" />
-            Use This Text
+            <FileText className="ml-2 h-4 w-4" />
+            استخدم هذا النص
           </Button>
         </div>
       )}
@@ -275,18 +275,18 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
       {uploadState.status === "ready" && (
         <Alert className="border-green-500 bg-green-500/10">
           <CheckCircle2 className="h-4 w-4 text-green-500" />
-          <AlertTitle className="text-green-500">Ready for Analysis</AlertTitle>
+          <AlertTitle className="text-green-500">جاهز للتحليل</AlertTitle>
           <AlertDescription className="text-green-600 dark:text-green-400">
             {uploadState.fileName
-              ? `File "${uploadState.fileName}" processed successfully`
-              : "Contract text loaded successfully"}
+              ? `تمت معالجة الملف "${uploadState.fileName}" بنجاح`
+              : "تم تحميل نص العقد بنجاح"}
             <Button
               variant="ghost"
               size="sm"
               onClick={handleReset}
-              className="ml-2"
+              className="mr-2"
             >
-              Change
+              تغيير
             </Button>
           </AlertDescription>
         </Alert>
@@ -295,16 +295,16 @@ export function ContractUpload({ onTextExtracted, disabled = false }: ContractUp
       {uploadState.status === "error" && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
+          <AlertTitle>خطأ</AlertTitle>
           <AlertDescription>
             {uploadState.error}
             <Button
               variant="ghost"
               size="sm"
               onClick={handleReset}
-              className="ml-2"
+              className="mr-2"
             >
-              Try Again
+              حاول مرة أخرى
             </Button>
           </AlertDescription>
         </Alert>

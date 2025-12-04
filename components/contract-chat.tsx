@@ -19,7 +19,6 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { ChatMessage, ContractAnalysis } from "@/types/contract";
-import { readStreamableValue } from "ai/rsc";
 
 interface ContractChatProps {
   contractText: string;
@@ -57,6 +56,9 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
     setStreamingMessage("");
 
     try {
+      console.log("=== CHAT: Sending request ===");
+      console.log("Question:", userMessage.content);
+
       const response = await fetch("/api/contract/chat", {
         method: "POST",
         headers: {
@@ -69,61 +71,44 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
         }),
       });
 
+      console.log("=== CHAT: Response status ===", response.status);
+
+      const result = await response.json();
+      console.log("=== CHAT: Response data ===", result);
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        console.error("=== CHAT: Error response ===", result);
 
         // Handle quota errors specifically
-        if (
-          response.status === 429 ||
-          errorData.errorType === "quota_exceeded"
-        ) {
+        if (response.status === 429 || result.errorType === "quota_exceeded") {
           throw new Error(
-            "API quota limit exceeded. Please wait a moment and try again."
+            result.error ||
+              "تم تجاوز حد API. يرجى الانتظار لحظة والمحاولة مرة أخرى."
           );
         }
 
-        throw new Error(errorData.error || "Failed to get response");
+        throw new Error(result.error || "فشل في الحصول على استجابة");
       }
 
-      // Handle streaming response
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedText = "";
+      // Get the answer from the JSON response
+      const answerText = result.answer || "";
 
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+      console.log("=== CHAT: Answer received ===", answerText);
 
-          const chunk = decoder.decode(value);
-          const lines = chunk.split("\n");
-
-          for (const line of lines) {
-            if (line.startsWith("0:")) {
-              try {
-                const jsonStr = line.substring(2).trim();
-                if (jsonStr) {
-                  const parsed = JSON.parse(jsonStr);
-                  if (parsed.answer) {
-                    accumulatedText = parsed.answer;
-                    setStreamingMessage(accumulatedText);
-                  }
-                }
-              } catch (e) {
-                // Continue parsing other lines
-              }
-            }
-          }
-        }
-      }
-
-      // Create assistant message from accumulated text
+      // Create assistant message
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content:
-          accumulatedText || "I apologize, but I couldn't generate a response.",
+          answerText ||
+          "عذراً، لم أتمكن من إنشاء استجابة. يرجى المحاولة مرة أخرى.",
         timestamp: new Date(),
+        structured: {
+          answer: answerText,
+          relatedIssues: result.relatedIssues || [],
+          lawReferences: result.lawReferences || [],
+          additionalSuggestions: result.additionalSuggestions || [],
+        },
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -132,18 +117,19 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
       console.error("Chat error:", error);
 
       let errorContent =
-        "I apologize, but I encountered an error. Please try again.";
+        "عذراً، واجهت خطأ أثناء معالجة سؤالك. يرجى المحاولة مرة أخرى.";
 
       // Provide better error message for quota errors
       if (error instanceof Error) {
         if (
           error.message.includes("quota") ||
-          error.message.includes("rate limit")
+          error.message.includes("rate limit") ||
+          error.message.includes("API")
         ) {
           errorContent =
-            "⚠️ API quota limit reached. Please wait 1-2 minutes before asking another question.\n\nYou can check your API usage at: https://ai.dev/usage";
+            "⚠️ تم الوصول إلى حد API. يرجى الانتظار دقيقة أو دقيقتين قبل طرح سؤال آخر.\n\nيمكنك التحقق من استخدام API الخاص بك على: https://ai.dev/usage";
         } else {
-          errorContent = `Error: ${error.message}`;
+          errorContent = `خطأ: ${error.message}`;
         }
       }
 
@@ -174,11 +160,11 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
           <div>
             <CardTitle className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              Ask About Your Contract
+              اسأل عن عقدك
             </CardTitle>
             <CardDescription>
-              Get answers about Egyptian law compliance, clauses, and legal
-              requirements
+              احصل على إجابات حول الامتثال للقانون المصري والبنود والمتطلبات
+              القانونية
             </CardDescription>
           </div>
         </div>
@@ -189,17 +175,23 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
           {messages.length === 0 && !streamingMessage && (
             <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
               <MessageCircle className="h-12 w-12 mb-3 opacity-50" />
-              <p className="text-sm mb-2">No messages yet</p>
+              <p className="text-sm mb-2">لا توجد رسائل بعد</p>
               <p className="text-xs max-w-sm">
-                Ask questions about the contract, specific clauses, Egyptian law
-                compliance, or request clarifications on the analysis results.
+                اطرح أسئلة حول العقد أو بنود محددة أو الامتثال للقانون المصري أو
+                اطلب توضيحات حول نتائج التحليل.
               </p>
-              <div className="mt-4 space-y-2 text-left">
-                <p className="text-xs font-semibold">Example questions:</p>
+              <div className="mt-4 space-y-2 text-right">
+                <p className="text-xs font-semibold">أمثلة على الأسئلة:</p>
                 <ul className="text-xs space-y-1">
-                  <li>• "What are the critical issues I need to fix first?"</li>
-                  <li>• "Explain Article 223 of the Egyptian Civil Code"</li>
-                  <li>• "How can I make the termination clause compliant?"</li>
+                  <li>
+                    • &quot;ما هي المشاكل الحرجة التي يجب إصلاحها أولاً؟&quot;
+                  </li>
+                  <li>
+                    • &quot;اشرح المادة 223 من القانون المدني المصري&quot;
+                  </li>
+                  <li>
+                    • &quot;كيف أجعل بند الإنهاء متوافقاً مع القانون؟&quot;
+                  </li>
                 </ul>
               </div>
             </div>
@@ -224,20 +216,20 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
                     <BookOpen className="h-4 w-4 mt-0.5 shrink-0" />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm whitespace-pre-wrap">
+                    <p className="text-sm whitespace-pre-wrap text-arabic-auto">
                       {message.content}
                     </p>
                     {message.structured?.lawReferences &&
                       message.structured.lawReferences.length > 0 && (
                         <div className="mt-2 pt-2 border-t border-border/50">
                           <p className="text-xs font-semibold mb-1">
-                            Law References:
+                            مراجع قانونية:
                           </p>
                           {message.structured.lawReferences.map((ref, idx) => (
                             <Badge
                               key={idx}
                               variant="outline"
-                              className="mr-1 mb-1 text-xs"
+                              className="ml-1 mb-1 text-xs"
                             >
                               {ref.article}
                             </Badge>
@@ -249,7 +241,7 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
                         <div className="mt-2 pt-2 border-t border-border/50">
                           <p className="text-xs font-semibold mb-1 flex items-center gap-1">
                             <Lightbulb className="h-3 w-3" />
-                            Suggestions:
+                            اقتراحات:
                           </p>
                           <ul className="text-xs space-y-1">
                             {message.structured.additionalSuggestions.map(
@@ -279,12 +271,14 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
                 <div className="flex items-start gap-2">
                   <BookOpen className="h-4 w-4 mt-0.5 shrink-0" />
                   <div className="flex-1">
-                    <p className="text-sm whitespace-pre-wrap">
+                    <p className="text-sm whitespace-pre-wrap text-arabic-auto">
                       {streamingMessage}
                     </p>
                     <div className="flex items-center gap-1 mt-2">
                       <Loader2 className="h-3 w-3 animate-spin" />
-                      <span className="text-xs opacity-70">Typing...</span>
+                      <span className="text-xs opacity-70">
+                        جاري الكتابة...
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -298,7 +292,7 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
               <div className="rounded-lg p-3 bg-muted">
                 <div className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm">Analyzing your question...</span>
+                  <span className="text-sm">جاري تحليل سؤالك...</span>
                 </div>
               </div>
             </div>
@@ -313,7 +307,7 @@ export function ContractChat({ contractText, analysis }: ContractChatProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask a question about the contract..."
+            placeholder="اطرح سؤالاً عن العقد..."
             disabled={isLoading}
             className="flex-1"
           />

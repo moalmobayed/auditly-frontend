@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("✅ Starting AI analysis...");
-    
+
     // Analyze contract
     const analysis = await analyzeContract(contractText);
 

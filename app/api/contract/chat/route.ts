@@ -1,5 +1,5 @@
-import { NextRequest } from "next/server";
-import { chatAboutContract } from "@/lib/contract-analyzer";
+import { NextRequest, NextResponse } from "next/server";
+import { simpleChatAboutContract } from "@/lib/contract-analyzer";
 import { ContractAnalysis } from "@/types/contract";
 
 // Helper to check if error is a quota error
@@ -28,61 +28,84 @@ function isRetryError(error: unknown): boolean {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("=== CHAT API: Request received ===");
     const body = await request.json();
     const { contractText, analysis, question } = body;
 
+    console.log("Question:", question);
+    console.log("Contract text length:", contractText?.length);
+    console.log("Analysis provided:", !!analysis);
+
     // Validate inputs
     if (!contractText || typeof contractText !== "string") {
-      return new Response(
-        JSON.stringify({ error: "Contract text is required" }),
+      console.error("❌ Contract text is required");
+      return NextResponse.json(
+        { error: "Contract text is required" },
         { status: 400 }
       );
     }
 
     if (!question || typeof question !== "string") {
-      return new Response(JSON.stringify({ error: "Question is required" }), {
-        status: 400,
-      });
+      console.error("❌ Question is required");
+      return NextResponse.json(
+        { error: "Question is required" },
+        { status: 400 }
+      );
     }
 
     // Parse analysis if provided
     const parsedAnalysis: ContractAnalysis | null = analysis || null;
 
-    // Stream chat response
-    const result = await chatAboutContract(
+    console.log("🤖 Starting chat with AI...");
+
+    // Use simple (non-streaming) chat for more reliable responses
+    const result = await simpleChatAboutContract(
       contractText,
       parsedAnalysis,
       question
     );
 
-    // Return streaming response
-    return result.toTextStreamResponse();
+    console.log("✅ Chat response received");
+    console.log("=== CHAT RESULT ===");
+    console.log("Answer:", result.answer);
+    console.log("Related Issues:", result.relatedIssues);
+    console.log("Law References:", result.lawReferences);
+    console.log("==================");
+
+    // Return JSON response
+    return NextResponse.json({
+      success: true,
+      ...result,
+    });
   } catch (error) {
-    console.error("Contract chat API error:", error);
+    console.error("=== CHAT API ERROR ===");
+    console.error("Error:", error);
+    console.error(
+      "Error type:",
+      error instanceof Error ? error.constructor.name : typeof error
+    );
+    console.error("=====================");
 
     // Handle quota errors specifically
     if (isQuotaError(error) || isRetryError(error)) {
-      return new Response(
-        JSON.stringify({
-          error:
-            "API quota limit exceeded. Please wait a moment and try again.",
+      return NextResponse.json(
+        {
+          error: "تم تجاوز حد API. يرجى الانتظار لحظة والمحاولة مرة أخرى.",
           errorType: "quota_exceeded",
           retryable: true,
-        }),
+        },
         { status: 429 }
       );
     }
 
     // Handle other errors
-    return new Response(
-      JSON.stringify({
+    return NextResponse.json(
+      {
         error:
-          error instanceof Error
-            ? error.message
-            : "Failed to process chat request",
+          error instanceof Error ? error.message : "فشل في معالجة طلب الدردشة",
         errorType: "server_error",
         retryable: false,
-      }),
+      },
       { status: 500 }
     );
   }

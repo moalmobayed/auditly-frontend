@@ -5,97 +5,100 @@ import {
   chatResponseSchema,
   ContractAnalysis,
   ChatResponse,
-  Severity,
 } from "@/types/contract";
 
 // System prompt for Egyptian law contract analysis
-const EGYPTIAN_LAW_SYSTEM_PROMPT = `🏛 Digital AI Lawyer - Contract Review System
+const EGYPTIAN_LAW_SYSTEM_PROMPT = `🏛 النظام الرقمي للمحاماة - نظام مراجعة العقود
 
-Your Role
-You are an expert lawyer specializing in Egyptian law and technology company contracts. Your task is to meticulously review contracts and identify any legal conflicts or risks according to the Egyptian Constitution and related laws.
+دورك
+أنت محامي خبير متخصص في القانون المصري وعقود شركات التكنولوجيا. مهمتك هي مراجعة العقود بدقة وتحديد أي تعارضات قانونية أو مخاطر وفقاً للدستور المصري والقوانين ذات الصلة.
 
-Core Instructions
+التعليمات الأساسية
 
-1. Review Scope
-Review the attached contract based on:
-- Egyptian Constitution (2014 and amendments)
-- Egyptian Civil Code
-- Egyptian Commercial Code
-- Personal Data Protection Law (151 of 2020)
-- Cybercrime Law
-- Egyptian Intellectual Property Laws
-- Any other laws relevant to the nature of the contract
+1. نطاق المراجعة
+راجع العقد المرفق بناءً على:
+- الدستور المصري (2014 والتعديلات)
+- القانون المدني المصري
+- القانون التجاري المصري
+- قانون حماية البيانات الشخصية (151 لسنة 2020)
+- قانون مكافحة جرائم تقنية المعلومات
+- قوانين الملكية الفكرية المصرية
+- أي قوانين أخرى ذات صلة بطبيعة العقد
 
-2. Focus Areas
-Focus on:
-- Clauses that violate the Constitution or Egyptian law
-- Ambiguous or undefined clauses
-- Legal loopholes in the contract
-- Unbalanced rights and obligations
-- Termination conditions and penalties
-- Data protection and privacy
-- Intellectual property
-- Jurisdiction determination
-- Applicable law
+2. مجالات التركيز
+ركز على:
+- البنود التي تخالف الدستور أو القانون المصري
+- البنود الغامضة أو غير المحددة
+- الثغرات القانونية في العقد
+- عدم توازن الحقوق والالتزامات
+- شروط الإنهاء والجزاءات
+- حماية البيانات والخصوصية
+- الملكية الفكرية
+- تحديد الاختصاص القضائي
+- القانون الواجب التطبيق
 
-Analysis Requirements
+متطلبات التحليل
 
-For each issue you identify, you must provide:
+لكل مشكلة تحددها، يجب عليك تقديم:
 
-🔴 Issue Title: Clear, descriptive title
+🔴 عنوان المشكلة: عنوان واضح ووصفي
 
-📍 Location in Contract:
-- Clause number (if available)
-- Page number (if available)
-- Quote the relevant clause text
+📍 الموقع في العقد:
+- رقم البند (إن وُجد)
+- رقم الصفحة (إن وُجد)
+- اقتباس نص البند المعني
 
-⚠️ The Problem: Clear description of the legal issue
+⚠️ المشكلة: وصف واضح للمشكلة القانونية
 
-📜 Legal Basis:
-- Violated Article number from Constitution/Law
-- Article Text (relevant legal text)
-- Interpretation: how the clause conflicts with the legal text
+📜 الأساس القانوني:
+- رقم المادة المخالفة من الدستور/القانون
+- نص المادة (النص القانوني ذي الصلة)
+- التفسير: كيف يتعارض البند مع النص القانوني
 
-💥 Potential Impact: Explain legal and commercial consequences
+💥 التأثير المحتمل: اشرح العواقب القانونية والتجارية
 
-✅ Recommendation: Specific suggestion to resolve the issue with alternative wording if possible
+✅ التوصية: اقتراح محدد لحل المشكلة مع صياغة بديلة إن أمكن
 
-🔢 Priority Level: Critical/High/Medium/Low
+🔢 مستوى الأولوية: حرج/عالي/متوسط/منخفض
 
-Important Notes:
-- Use precise legal terminology
-- Quote texts verbatim from the contract and law
-- Be specific in recommendations and provide practical alternative wording
-- Classify risk levels objectively
-- If no issues exist, state that clearly
-- Maintain professional and objective tone throughout
+ملاحظات هامة:
+- استخدم المصطلحات القانونية الدقيقة
+- اقتبس النصوص حرفياً من العقد والقانون
+- كن محدداً في التوصيات وقدم صياغات بديلة عملية
+- صنف مستويات المخاطر بموضوعية
+- إذا لم تكن هناك مشاكل، فاذكر ذلك بوضوح
+- حافظ على لهجة مهنية وموضوعية طوال الوقت
 
-Your analysis should help identify risks and provide actionable recommendations for contract improvement according to Egyptian law.`;
+**مهم جداً: يجب أن تكون جميع إجاباتك باللغة العربية بالكامل**
+
+يجب أن يساعد تحليلك في تحديد المخاطر وتقديم توصيات قابلة للتنفيذ لتحسين العقد وفقاً للقانون المصري.`;
 
 // Build analysis prompt
 function buildAnalysisPrompt(contractText: string): string {
-  return `Analyze the following contract according to Egyptian law. Identify all legal issues, violations, and areas of concern.
+  return `قم بتحليل العقد التالي وفقاً للقانون المصري. حدد جميع المشاكل القانونية والمخالفات ونقاط القلق.
 
-**Contract to Analyze:**
+**العقد المراد تحليله:**
 ${contractText}
 
-**Instructions:**
-1. Carefully review the contract against Egyptian Civil Code, Commercial Code, and Labor Law
-2. Classify issues by severity (Critical, High, Medium, Low)
-3. For each issue, cite the specific Egyptian law article
-4. Provide clear, actionable suggestions for compliance
-5. Generate overall insights about the contract's legal standing
-6. Provide recommendations for improvement
+**التعليمات:**
+1. راجع العقد بعناية مقابل القانون المدني المصري والقانون التجاري وقانون العمل
+2. صنف المشاكل حسب الخطورة (حرج، عالي، متوسط، منخفض)
+3. لكل مشكلة، اذكر المادة القانونية المصرية المحددة
+4. قدم اقتراحات واضحة وقابلة للتنفيذ للامتثال
+5. قدم رؤى شاملة حول الوضع القانوني للعقد
+6. قدم توصيات للتحسين
 
-Focus on:
-- Contract validity and enforceability
-- Missing essential clauses required by Egyptian law
-- Ambiguous or problematic terms
-- Compliance with mandatory legal provisions
-- Protection of parties' rights
-- Potential legal risks
+ركز على:
+- صحة العقد وقابليته للتنفيذ
+- البنود الأساسية المفقودة المطلوبة بموجب القانون المصري
+- الشروط الغامضة أو الإشكالية
+- الامتثال للأحكام القانونية الإلزامية
+- حماية حقوق الأطراف
+- المخاطر القانونية المحتملة
 
-Provide a comprehensive analysis with structured output.`;
+قدم تحليلاً شاملاً مع مخرجات منظمة.
+
+**مهم جداً: يجب أن يكون التحليل بالكامل باللغة العربية. جميع العناوين والأوصاف والتوصيات والرؤى يجب أن تكون بالعربية.**`;
 }
 
 // Helper to extract meaningful error message
@@ -191,8 +194,8 @@ export async function analyzeContract(
         medium: [],
         low: [],
       },
-      generalInsights: `Analysis failed: ${errorMessage}. Please try again.`,
-      recommendations: ["Unable to generate recommendations at this time."],
+      generalInsights: `فشل التحليل: ${errorMessage}. يرجى المحاولة مرة أخرى.`,
+      recommendations: ["غير قادر على إنشاء توصيات في هذا الوقت."],
     };
   }
 }
@@ -203,22 +206,23 @@ function buildChatPrompt(
   analysis: ContractAnalysis | null,
   question: string
 ): string {
-  let prompt = `You are answering questions about a contract that has been analyzed according to Egyptian law.\n\n`;
+  let prompt = `أنت تجيب على أسئلة حول عقد تم تحليله وفقاً للقانون المصري.\n\n`;
 
-  prompt += `**Contract Summary:**\n${contractText.substring(0, 2000)}${
+  prompt += `**ملخص العقد:**\n${contractText.substring(0, 2000)}${
     contractText.length > 2000 ? "..." : ""
   }\n\n`;
 
   if (analysis) {
-    prompt += `**Previous Analysis Summary:**\n`;
-    prompt += `- Total Issues: ${analysis.summary.totalIssues}\n`;
-    prompt += `- Critical: ${analysis.summary.criticalCount}, High: ${analysis.summary.highCount}, Medium: ${analysis.summary.mediumCount}, Low: ${analysis.summary.lowCount}\n`;
-    prompt += `- Overall Risk: ${analysis.summary.overallRisk}\n\n`;
-    prompt += `**Key Insights:** ${analysis.generalInsights}\n\n`;
+    prompt += `**ملخص التحليل السابق:**\n`;
+    prompt += `- إجمالي المشاكل: ${analysis.summary.totalIssues}\n`;
+    prompt += `- حرج: ${analysis.summary.criticalCount}, عالي: ${analysis.summary.highCount}, متوسط: ${analysis.summary.mediumCount}, منخفض: ${analysis.summary.lowCount}\n`;
+    prompt += `- المخاطر الإجمالية: ${analysis.summary.overallRisk}\n\n`;
+    prompt += `**الرؤى الرئيسية:** ${analysis.generalInsights}\n\n`;
   }
 
-  prompt += `**User Question:** ${question}\n\n`;
-  prompt += `Please provide a detailed answer with relevant Egyptian law references, related issues from the analysis, and additional suggestions if applicable.`;
+  prompt += `**سؤال المستخدم:** ${question}\n\n`;
+  prompt += `يرجى تقديم إجابة مفصلة مع مراجع القانون المصري ذات الصلة والمشاكل المتعلقة من التحليل واقتراحات إضافية إن أمكن.`;
+  prompt += `\n\n**مهم جداً: يجب أن تكون إجابتك بالكامل باللغة العربية.**`;
 
   return prompt;
 }
@@ -230,19 +234,42 @@ export async function chatAboutContract(
   question: string
 ) {
   try {
+    console.log("=== CHAT ANALYZER: chatAboutContract() ===");
+    console.log("Question:", question);
+    console.log("Contract text length:", contractText.length);
+    console.log("Analysis provided:", !!analysis);
+
     const model = getGeminiModel();
+    console.log("✅ Model obtained");
+
+    const prompt = buildChatPrompt(contractText, analysis, question);
+    console.log("=== CHAT PROMPT ===");
+    console.log("Prompt:", prompt);
+    console.log("==================");
+
+    console.log("🤖 Calling AI SDK streamObject...");
+    const startTime = Date.now();
 
     const result = await streamObject({
       model,
       schema: chatResponseSchema,
       system: EGYPTIAN_LAW_SYSTEM_PROMPT,
-      prompt: buildChatPrompt(contractText, analysis, question),
+      prompt: prompt,
       temperature: 0.5,
     });
 
+    const duration = Date.now() - startTime;
+    console.log(`✅ Stream object created in ${duration}ms`);
+
     return result;
   } catch (error) {
-    console.error("Chat error:", error);
+    console.error("=== CHAT ANALYZER ERROR ===");
+    console.error("Error:", error);
+    console.error(
+      "Error type:",
+      error instanceof Error ? error.constructor.name : typeof error
+    );
+    console.error("==========================");
     throw error;
   }
 }
@@ -254,23 +281,64 @@ export async function simpleChatAboutContract(
   question: string
 ): Promise<ChatResponse> {
   try {
+    console.log("=== SIMPLE CHAT: simpleChatAboutContract() ===");
+    console.log("Question:", question);
+    console.log("Contract text length:", contractText.length);
+    console.log("Analysis provided:", !!analysis);
+
     const model = getGeminiModel();
+    console.log("✅ Model obtained");
+
+    const prompt = buildChatPrompt(contractText, analysis, question);
+    console.log("=== SIMPLE CHAT PROMPT ===");
+    console.log("Prompt:", prompt);
+    console.log("=========================");
+
+    console.log("🤖 Calling AI SDK generateObject...");
+    const startTime = Date.now();
 
     const { object } = await generateObject({
       model,
       schema: chatResponseSchema,
       system: EGYPTIAN_LAW_SYSTEM_PROMPT,
-      prompt: buildChatPrompt(contractText, analysis, question),
+      prompt: prompt,
       temperature: 0.5,
     });
 
+    const duration = Date.now() - startTime;
+    console.log(`✅ Simple chat completed in ${duration}ms`);
+    console.log("=== SIMPLE CHAT RESULT ===");
+    console.log("Answer:", object.answer);
+    console.log("Related Issues:", object.relatedIssues);
+    console.log("Law References:", object.lawReferences);
+    console.log("Additional Suggestions:", object.additionalSuggestions);
+    console.log("=========================");
+
     return object;
   } catch (error) {
-    console.error("Simple chat error:", error);
+    console.error("=== SIMPLE CHAT ERROR ===");
+    console.error("Error:", error);
+    console.error(
+      "Error type:",
+      error instanceof Error ? error.constructor.name : typeof error
+    );
+    console.error("========================");
+
+    // Re-throw quota errors so they can be handled in the API route
+    if (error instanceof Error) {
+      const errorMessage = error.message.toLowerCase();
+      if (
+        errorMessage.includes("quota") ||
+        errorMessage.includes("resource_exhausted") ||
+        error.name === "AI_RetryError"
+      ) {
+        throw error;
+      }
+    }
 
     return {
       answer:
-        "I apologize, but I encountered an error while processing your question. Please try again.",
+        "أعتذر، لكن واجهت خطأ أثناء معالجة سؤالك. يرجى المحاولة مرة أخرى.",
       relatedIssues: [],
       lawReferences: [],
       additionalSuggestions: [],
